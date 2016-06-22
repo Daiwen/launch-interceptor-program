@@ -5,21 +5,21 @@ module C = Condition
 
 let get_cmv data =
   `Assoc
-  [( "0", `String (string_of_bool (C.condion0  data)));
-   ( "1", `String (string_of_bool (C.condion1  data)));
-   ( "2", `String (string_of_bool (C.condion2  data)));
-   ( "3", `String (string_of_bool (C.condion3  data)));
-   ( "4", `String (string_of_bool (C.condion4  data)));
-   ( "5", `String (string_of_bool (C.condion5  data)));
-   ( "6", `String (string_of_bool (C.condion6  data)));
-   ( "7", `String (string_of_bool (C.condion7  data)));
-   ( "8", `String (string_of_bool (C.condion8  data)));
-   ( "9", `String (string_of_bool (C.condion9  data)));
-   ("10", `String (string_of_bool (C.condion10 data)));
-   ("11", `String (string_of_bool (C.condion11 data)));
-   ("12", `String (string_of_bool (C.condion12 data)));
-   ("13", `String (string_of_bool (C.condion13 data)));
-   ("14", `String (string_of_bool (C.condion14 data)));
+  [( "0", `String (string_of_bool (C.condition0  data)));
+   ( "1", `String (string_of_bool (C.condition1  data)));
+   ( "2", `String (string_of_bool (C.condition2  data)));
+   ( "3", `String (string_of_bool (C.condition3  data)));
+   ( "4", `String (string_of_bool (C.condition4  data)));
+   ( "5", `String (string_of_bool (C.condition5  data)));
+   ( "6", `String (string_of_bool (C.condition6  data)));
+   ( "7", `String (string_of_bool (C.condition7  data)));
+   ( "8", `String (string_of_bool (C.condition8  data)));
+   ( "9", `String (string_of_bool (C.condition9  data)));
+   ("10", `String (string_of_bool (C.condition10 data)));
+   ("11", `String (string_of_bool (C.condition11 data)));
+   ("12", `String (string_of_bool (C.condition12 data)));
+   ("13", `String (string_of_bool (C.condition13 data)));
+   ("14", `String (string_of_bool (C.condition14 data)));
   ]
 
 let get_pum data cmv = `Null 

@@ -1,27 +1,15 @@
 module J = Json_operations
 module G = Geometry
 
-let get_nth q' =
-  let q = Queue.copy q' in
+let pop_n q =
   let rec aux =
     function
-      0 -> Queue.pop q
+      0 -> ()
     | n ->
         let _ = Queue.pop q in
         aux (n - 1)
   in
   aux
-
-
-let get_first =
-  Queue.peek
-
-
-let get_last q' =
-  let q = Queue.copy q' in
-  Queue.fold
-    (fun _ p -> p)
-    (Queue.pop q) q
 
 
 let test_points points nb f =
@@ -38,37 +26,33 @@ let test_points points nb f =
   false points
 
 
-let condion0 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let length1 = J.data_of_json (List.assoc "LENGTH1" parameters) in
-  test_points points 2
+let test_length op points offset length =
+  test_points points (2 + offset)
   (fun q ->
     let p1 = Queue.pop q in
+    pop_n q offset;
     let p2 = Queue.pop q in
-    (G.distance p1 p2) > length1)
+    op (G.distance p1 p2) length)
 
 
-let condion1 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let radius1 = J.data_of_json (List.assoc "RADIUS1" parameters) in
-  test_points points 3
+let test_circle f points offset1 offset2 radius =
+  test_points points (3 + offset1 + offset2)
   (fun q ->
     let p1 = Queue.pop q in
+    pop_n q offset1;
     let p2 = Queue.pop q in
+    pop_n q offset2;
     let p3 = Queue.pop q in
-    not (G.is_in_radius radius1 p1 p2 p3))
+    f (not (G.is_in_radius radius p1 p2 p3)))
 
 
-let condion2 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let epsilon = J.data_of_json (List.assoc "EPSILON" parameters) in
-  test_points points 3
+let test_angle points offset1 offset2 epsilon =
+  test_points points (3 + offset1 + offset2)
   (fun q ->
     let p1 = Queue.pop q in
+    pop_n q offset1;
     let p2 = Queue.pop q in
+    pop_n q offset2;
     let p3 = Queue.pop q in
     not (p1 = p2) &&
     not (p3 = p2) &&
@@ -76,19 +60,51 @@ let condion2 data =
      G.angle p1 p2 p3 > G.pi +. epsilon))
 
 
-let condion3 data =
+let test_area op points offset1 offset2 area =
+  test_points points (3 + offset1 + offset2)
+  (fun q ->
+    let p1 = Queue.pop q in
+    pop_n q offset1;
+    let p2 = Queue.pop q in
+    pop_n q offset2;
+    let p3 = Queue.pop q in
+    op (G.area p1 p2 p3) area)
+
+
+let test_sub points offset =
+  test_points points (2 + offset)
+  (fun q ->
+    let p1 = Queue.pop q in
+    pop_n q offset;
+    let p2 = Queue.pop q in
+    p2.G.x -. p1.G.x < 0.)
+
+
+let condition0 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let length1 = J.data_of_json (List.assoc "LENGTH1" parameters) in
+  test_length (>) points 0 length1
+
+let condition1 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let radius1 = J.data_of_json (List.assoc "RADIUS1" parameters) in
+  test_circle (fun x -> x) points 0 0 radius1
+
+let condition2 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let epsilon = J.data_of_json (List.assoc "EPSILON" parameters) in
+  test_angle points 0 0 epsilon
+
+let condition3 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let area1 = J.data_of_json (List.assoc "AREA1" parameters) in
-  test_points points 3
-  (fun q ->
-    let p1 = Queue.pop q in
-    let p2 = Queue.pop q in
-    let p3 = Queue.pop q in
-    G.area p1 p2 p3 > area1)
+  test_area (>) points 0 0 area1
 
-
-let condion4 data =
+let condition4 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let quads =
@@ -102,25 +118,20 @@ let condion4 data =
     let qs =
       Queue.fold
         (fun quads p ->
-           let quad = G.quadrant p in
-           if List.mem quad quads
+          let quad = G.quadrant p in
+          if List.mem quad quads
            then quads
            else quad::quads)
         [] q
-    in
+          in
     List.length qs > quads)
 
 
-let condion5 data =
+let condition5 data =
   let points = J.get_points data in
-  test_points points 2
-  (fun q ->
-    let p1 = Queue.pop q in
-    let p2 = Queue.pop q in
-    p2.G.x -. p1.G.x < 0.)
+  test_sub points 0
 
-
-let condion6 data =
+let condition6 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let n_pts =
@@ -131,29 +142,26 @@ let condion6 data =
   in
   test_points points n_pts
   (fun q ->
-    let first = get_first q in
-    let last  = get_last  q in
+    let first = Queue.pop q in
+    pop_n q (n_pts - 2);
+    let last  = Queue.pop q in
     let line  = G.line_of_points first last in
     Queue.fold
       (fun acc p ->
-         acc || G.distance_to_line line p > dist) false q)
+        acc || G.distance_to_line line p > dist) false q)
 
 
-let condion7 data =
+let condition7 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let k_pts =
     int_of_float (J.data_of_json (List.assoc "K_PTS" parameters))
   in
   let length1 = J.data_of_json (List.assoc "LENGTH1" parameters) in
-  test_points points (2 + k_pts)
-  (fun q ->
-    let first = get_first q in
-    let last  = get_last  q in
-    G.distance first last > length1)
+  test_length (>) points k_pts length1
 
 
-let condion8 data =
+let condition8 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let a_pts =
@@ -163,15 +171,10 @@ let condion8 data =
     int_of_float (J.data_of_json (List.assoc "B_PTS" parameters))
   in
   let radius1 = J.data_of_json (List.assoc "RADIUS1" parameters) in
-  test_points points (3 + a_pts + b_pts)
-  (fun q ->
-    let p1 = get_first q in
-    let p2 = get_nth q (1 + a_pts) in
-    let p3 = get_last  q in
-    not (G.is_in_radius radius1 p1 p2 p3))
- 
+  test_circle (fun x -> x) points a_pts b_pts radius1
 
-let condion9 data =
+
+let condition9 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let c_pts =
@@ -181,18 +184,10 @@ let condion9 data =
     int_of_float (J.data_of_json (List.assoc "D_PTS" parameters))
   in
   let epsilon = J.data_of_json (List.assoc "EPSILON" parameters) in
-  test_points points (3 + c_pts + d_pts)
-  (fun q ->
-    let p1 = get_first q in
-    let p2 = get_nth q (1 + c_pts) in
-    let p3 = get_last  q in
-    not (p1 = p2) &&
-    not (p3 = p2) &&
-    (G.angle p1 p2 p3 < G.pi -. epsilon ||
-     G.angle p1 p2 p3 > G.pi +. epsilon))
+  test_angle points c_pts d_pts epsilon
 
 
-let condion10 data =
+let condition10 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let e_pts =
@@ -202,29 +197,55 @@ let condion10 data =
     int_of_float (J.data_of_json (List.assoc "F_PTS" parameters))
   in
   let area1 = J.data_of_json (List.assoc "AREA1" parameters) in
-  test_points points (3 + e_pts + f_pts)
-  (fun q ->
-    let p1 = get_first q in
-    let p2 = get_nth q (1 + e_pts) in
-    let p3 = get_last  q in
-    G.area p1 p2 p3 > area1)
+  test_area (>) points e_pts f_pts area1
 
 
-let condion11 data =
+let condition11 data =
   let parameters = J.get_parameters data in
   let points = J.get_points data in
   let g_pts =
     int_of_float (J.data_of_json (List.assoc "G_PTS" parameters))
   in
-  test_points points (2 + g_pts)
-  (fun q ->
-    let p1 = get_first q in
-    let p2 = get_last  q in
-    p2.G.x -. p1.G.x < 0.)
+  test_sub points g_pts
 
 
-let condion12 data = false
-let condion13 data = false
-let condion14 data = false
+let condition12 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let k_pts =
+    int_of_float (J.data_of_json (List.assoc "K_PTS" parameters))
+  in
+  let length1 = J.data_of_json (List.assoc "LENGTH1" parameters) in
+  let length2 = J.data_of_json (List.assoc "LENGTH2" parameters) in
+  test_length (>) points k_pts length1 &&
+  test_length (<) points k_pts length2
 
 
+let condition13 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let a_pts =
+    int_of_float (J.data_of_json (List.assoc "A_PTS" parameters))
+  in
+  let b_pts =
+    int_of_float (J.data_of_json (List.assoc "B_PTS" parameters))
+  in
+  let radius1 = J.data_of_json (List.assoc "RADIUS1" parameters) in
+  let radius2 = J.data_of_json (List.assoc "RADIUS2" parameters) in
+  test_circle (fun x -> x)     points a_pts b_pts radius1 &&
+  test_circle (fun x -> not x) points a_pts b_pts radius2
+
+
+let condition14 data =
+  let parameters = J.get_parameters data in
+  let points = J.get_points data in
+  let e_pts =
+    int_of_float (J.data_of_json (List.assoc "E_PTS" parameters))
+  in
+  let f_pts =
+    int_of_float (J.data_of_json (List.assoc "F_PTS" parameters))
+  in
+  let area1 = J.data_of_json (List.assoc "AREA1" parameters) in
+  let area2 = J.data_of_json (List.assoc "AREA2" parameters) in
+  test_area (>) points e_pts f_pts area1 &&
+  test_area (<) points e_pts f_pts area2
