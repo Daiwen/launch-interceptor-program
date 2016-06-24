@@ -1,28 +1,36 @@
 module YS = Yojson.Safe
-
+module J = Json_operations
 module C = Condition
 
-
 let get_cmv data =
-  `Assoc
-  [( "0", `String (string_of_bool (C.condition0  data)));
-   ( "1", `String (string_of_bool (C.condition1  data)));
-   ( "2", `String (string_of_bool (C.condition2  data)));
-   ( "3", `String (string_of_bool (C.condition3  data)));
-   ( "4", `String (string_of_bool (C.condition4  data)));
-   ( "5", `String (string_of_bool (C.condition5  data)));
-   ( "6", `String (string_of_bool (C.condition6  data)));
-   ( "7", `String (string_of_bool (C.condition7  data)));
-   ( "8", `String (string_of_bool (C.condition8  data)));
-   ( "9", `String (string_of_bool (C.condition9  data)));
-   ("10", `String (string_of_bool (C.condition10 data)));
-   ("11", `String (string_of_bool (C.condition11 data)));
-   ("12", `String (string_of_bool (C.condition12 data)));
-   ("13", `String (string_of_bool (C.condition13 data)));
-   ("14", `String (string_of_bool (C.condition14 data)));
+  [C.condition0  data;
+   C.condition1  data;
+   C.condition2  data;
+   C.condition3  data;
+   C.condition4  data;
+   C.condition5  data;
+   C.condition6  data;
+   C.condition7  data;
+   C.condition8  data;
+   C.condition9  data;
+   C.condition10 data;
+   C.condition11 data;
+   C.condition12 data;
+   C.condition13 data;
+   C.condition14 data;
   ]
 
-let get_pum data cmv = `Null 
+let get_pum data cmv =
+  let lcm = J.get_lcm data in
+  List.map 
+    (fun (i, column) ->
+       let c1 = List.nth cmv i in
+       (i,
+        List.map2 
+          (fun op c2 -> op c1 c2)
+          column
+          cmv))
+    lcm
 
 let get_fuv data cmv pum = `Null 
 
@@ -33,8 +41,8 @@ let decide data =
 
   `Assoc
   [("LAUNCH", `String "YES");
-   ("CMV", cmv);
-   ("PUM", pum);
+   ("CMV", J.json_of_boolean_list cmv);
+   ("PUM", J.json_of_pum pum);
    ("FUV", fuv)
   ]
 

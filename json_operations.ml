@@ -15,14 +15,19 @@ let list_of_json = function
   | `Tuple jsons -> jsons
   | _            -> failwith "This is not a list."
 
+let fun_of_string = function
+    `String "ANDD"    -> (&&)
+  | `String "ORR"     -> (||)
+  | `String "NOTUSED" -> (fun _ _ -> true)
+  | _ -> failwith "Operator not supported."
+
 let get_parameters data =
   let parameters' = List.assoc "PARAMETERS" data in
   assoc_of_json parameters'
 
 
 let get_points data =
-  let points' = List.assoc "points" data in
-  let points = list_of_json points' in
+  let points = list_of_json (List.assoc "points" data) in
   List.map
   (fun json ->
     let point' = list_of_json json in
@@ -31,3 +36,26 @@ let get_points data =
      G.y = List.nth point 1}) points
 
 
+let get_lcm data =
+  let columns = assoc_of_json (List.assoc "LCM" data) in
+  List.map
+    (fun (s, json) ->
+       let column = list_of_json json in
+       (int_of_string s, List.map fun_of_string column))
+    columns
+
+
+let json_of_boolean_list l = 
+  `List
+    (List.map
+       (fun b -> `String (string_of_bool b))
+       l) 
+
+
+let json_of_pum pum =
+  `Assoc
+    (List.map
+      (fun (i, column) ->
+         (string_of_int i,
+          `List (List.map (fun b -> `String (string_of_bool b)) column)))
+      pum)
