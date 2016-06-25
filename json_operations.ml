@@ -34,11 +34,11 @@ let get_parameters data =
 let get_points data =
   let points = list_of_json (List.assoc "points" data) in
   List.map
-  (fun json ->
-    let point' = list_of_json json in
-    let point = List.map data_of_json point' in
-    {G.x = List.nth point 0;
-     G.y = List.nth point 1}) points
+    (fun json ->
+       let point' = list_of_json json in
+       let point = List.map data_of_json point' in
+       {G.x = List.nth point 0;
+        G.y = List.nth point 1}) points
 
 
 let get_lcm data =
@@ -65,7 +65,7 @@ let json_of_boolean_list l =
 let json_of_pum pum =
   `Assoc
     (List.map
-      (fun (i, column) ->
-         (string_of_int i,
-          `List (List.map (fun b -> `String (string_of_bool b)) column)))
-      pum)
+       (fun (i, column) ->
+          (string_of_int i,
+           `List (List.map (fun b -> `String (string_of_bool b)) column)))
+       pum)

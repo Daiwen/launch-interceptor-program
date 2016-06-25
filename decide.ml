@@ -24,8 +24,8 @@ let get_pum data cmv =
   let lcm = J.get_lcm data in
   List.map 
     (fun (i, column) ->
-       let c1 = List.nth cmv i in
-       (i,
+      let c1 = List.nth cmv i in
+      (i,
         List.map2 
           (fun op c2 -> op c1 c2)
           column
@@ -40,7 +40,7 @@ let get_fuv data cmv pum =
   in
   List.map2
     (fun is_relevant (_, column) ->
-       not (is_relevant) || not (List.mem false column))
+      not (is_relevant) || not (List.mem false column))
     puv
     sorted_pum
 
@@ -62,7 +62,7 @@ let decide data =
    ("FUV", J.json_of_boolean_list fuv)
   ]
 
-(*first arg is the filename*)
+  (*first arg is the filename*)
 let filename = Sys.argv.(1)
 
 let json = YS.from_file filename

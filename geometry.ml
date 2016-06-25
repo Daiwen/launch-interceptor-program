@@ -34,12 +34,12 @@ let distance_to_line line p =
   match line with
     Point  p1      -> distance p1 p
   | Line  (p1, p2) ->
-     (abs_float
-        ((p2.y -. p1.y) *. p.x -.
-         (p2.x -. p1.x) *. p.y +.
-         p2.x *. p1.y -.
-         p2.y *. p1.x)) /.
-     (distance p1 p2)
+    (abs_float
+       ((p2.y -. p1.y) *. p.x -.
+        (p2.x -. p1.x) *. p.y +.
+        p2.x *. p1.y -.
+        p2.y *. p1.x)) /.
+    (distance p1 p2)
 
 let angle p1 p2 p3 =
   let v1 = p1 -- p2 in
