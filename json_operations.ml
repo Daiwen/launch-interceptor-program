@@ -19,7 +19,12 @@ let fun_of_string = function
     `String "ANDD"    -> (&&)
   | `String "ORR"     -> (||)
   | `String "NOTUSED" -> (fun _ _ -> true)
-  | _ -> failwith "Operator not supported."
+  | _ -> failwith "Unknown operator."
+
+let bool_of_json = function
+    `String "true"  -> true
+  | `String "false" -> false
+  | _ -> failwith "Unknown boolean."
 
 let get_parameters data =
   let parameters' = List.assoc "PARAMETERS" data in
@@ -43,6 +48,11 @@ let get_lcm data =
        let column = list_of_json json in
        (int_of_string s, List.map fun_of_string column))
     columns
+
+
+let get_puv data =
+  let jsons = list_of_json (List.assoc "PUV" data) in
+  List.map bool_of_json jsons 
 
 
 let json_of_boolean_list l = 

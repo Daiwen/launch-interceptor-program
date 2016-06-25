@@ -32,21 +32,37 @@ let get_pum data cmv =
           cmv))
     lcm
 
-let get_fuv data cmv pum = `Null 
+let get_fuv data cmv pum =
+  let puv = J.get_puv data in
+  let sorted_pum = List.sort
+      (fun (i1, _) (i2, _) -> i1 - i2)
+      pum
+  in
+  List.map2
+    (fun is_relevant (_, column) ->
+       not (is_relevant) || not (List.mem false column))
+    puv
+    sorted_pum
+
 
 let decide data = 
   let cmv = get_cmv data in
   let pum = get_pum data cmv in
   let fuv = get_fuv data cmv pum in
+  let s =
+    if not (List.mem false fuv)
+    then "YES"
+    else "NO"
+  in
 
   `Assoc
-  [("LAUNCH", `String "YES");
+  [("LAUNCH", `String s);
    ("CMV", J.json_of_boolean_list cmv);
    ("PUM", J.json_of_pum pum);
-   ("FUV", fuv)
+   ("FUV", J.json_of_boolean_list fuv)
   ]
 
-  (*first arg is the filename*)
+(*first arg is the filename*)
 let filename = Sys.argv.(1)
 
 let json = YS.from_file filename
