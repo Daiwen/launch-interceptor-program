@@ -24,8 +24,8 @@ let get_pum data cmv =
   let lcm = J.get_lcm data in
   List.map 
     (fun (i, column) ->
-      let c1 = List.nth cmv i in
-      (i,
+       let c1 = List.nth cmv i in
+       (i,
         List.map2 
           (fun op c2 -> op c1 c2)
           column
@@ -40,7 +40,7 @@ let get_fuv data cmv pum =
   in
   List.map2
     (fun is_relevant (_, column) ->
-      not (is_relevant) || not (List.mem false column))
+       not (is_relevant) || not (List.mem false column))
     puv
     sorted_pum
 
@@ -56,19 +56,33 @@ let decide data =
   in
 
   `Assoc
-  [("LAUNCH", `String s);
-   ("CMV", J.json_of_boolean_list cmv);
-   ("PUM", J.json_of_pum pum);
-   ("FUV", J.json_of_boolean_list fuv)
-  ]
+    [("LAUNCH", `String s);
+     ("CMV", J.json_of_boolean_list cmv);
+     ("PUM", J.json_of_pum pum);
+     ("FUV", J.json_of_boolean_list fuv)
+    ]
 
-  (*first arg is the filename*)
-let filename = Sys.argv.(1)
+(*first arg is the filename*)
+let filenames = Array.sub Sys.argv 1 ((Array.length Sys.argv) - 1)
 
-let json = YS.from_file filename
+let jsons =
+  Array.map (fun n -> (n, YS.from_file n)) filenames
 
-let data = match json with
-    `Assoc data' -> data'
-  | _            -> failwith "Input is not assoc."
+let data =
+  Array.fold_left
+    (fun acc (n, json) ->
+       match json with
+         `Assoc data' ->
+         if J.check_data_constraints data'
+         then
+           (n, data')::acc
+         else
+           acc
+       | _ -> acc)
+    [] jsons
 
-let _ = Printf.eprintf "%s\n%!" (YS.to_string (decide data))
+let _ =
+  List.iter
+    (fun (_, data') ->
+       Printf.printf "%s\n%!" (YS.to_string (decide data')))
+    data
