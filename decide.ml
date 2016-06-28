@@ -22,11 +22,11 @@ let get_cmv data =
 
 let get_pum data cmv =
   let lcm = J.get_lcm data in
-  List.map 
+  List.map
     (fun (i, column) ->
        let c1 = List.nth cmv i in
        (i,
-        List.map2 
+        List.map2
           (fun op c2 -> op c1 c2)
           column
           cmv))
@@ -45,22 +45,13 @@ let get_fuv data cmv pum =
     sorted_pum
 
 
-let decide data = 
+let decide data =
   let cmv = get_cmv data in
   let pum = get_pum data cmv in
   let fuv = get_fuv data cmv pum in
-  let s =
-    if not (List.mem false fuv)
-    then "YES"
-    else "NO"
-  in
-
-  `Assoc
-    [("LAUNCH", `String s);
-     ("CMV", J.json_of_boolean_list cmv);
-     ("PUM", J.json_of_pum pum);
-     ("FUV", J.json_of_boolean_list fuv)
-    ]
+  if not (List.mem false fuv)
+  then "YES"
+  else "NO"
 
 (*first arg is the filename*)
 let filenames = Array.sub Sys.argv 1 ((Array.length Sys.argv) - 1)
@@ -84,5 +75,5 @@ let data =
 let _ =
   List.iter
     (fun (_, data') ->
-       Printf.printf "%s\n%!" (YS.to_string (decide data')))
+       Printf.printf "%s\n%!" (decide data'))
     data
