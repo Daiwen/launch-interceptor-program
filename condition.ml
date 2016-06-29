@@ -128,90 +128,108 @@ let condition5 data =
   test_sub points 0
 
 let condition6 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let n_pts = J.int_of_json (List.assoc "N_PTS" parameters) in
-  let dist = J.float_of_json (List.assoc "DIST" parameters) in
-  test_points points n_pts
-    (fun q ->
-       let first = Queue.pop q in
-       pop_n q (n_pts - 2);
-       let last  = Queue.pop q in
-       let line  = G.line_of_points first last in
-       Queue.fold
-         (fun acc p ->
-            acc || G.distance_to_line line p > dist) false q)
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 3) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let n_pts = J.int_of_json (List.assoc "N_PTS" parameters) in
+   let dist = J.float_of_json (List.assoc "DIST" parameters) in
+   test_points points n_pts
+     (fun q ->
+        let first = Queue.pop q in
+        pop_n q (n_pts - 2);
+        let last  = Queue.pop q in
+        let line  = G.line_of_points first last in
+        Queue.fold
+          (fun acc p ->
+             acc || G.distance_to_line line p > dist) false q))
 
 
 let condition7 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let k_pts = J.int_of_json (List.assoc "K_PTS" parameters) in
-  let length1 = J.float_of_json (List.assoc "LENGTH1" parameters) in
-  test_length (>) points k_pts length1
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 3) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let k_pts = J.int_of_json (List.assoc "K_PTS" parameters) in
+   let length1 = J.float_of_json (List.assoc "LENGTH1" parameters) in
+   test_length (>) points k_pts length1)
 
 
 let condition8 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let a_pts = J.int_of_json (List.assoc "A_PTS" parameters) in
-  let b_pts = J.int_of_json (List.assoc "B_PTS" parameters) in
-  let radius1 = J.float_of_json (List.assoc "RADIUS1" parameters) in
-  test_circle (fun x -> x) points a_pts b_pts radius1
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 5) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let a_pts = J.int_of_json (List.assoc "A_PTS" parameters) in
+   let b_pts = J.int_of_json (List.assoc "B_PTS" parameters) in
+   let radius1 = J.float_of_json (List.assoc "RADIUS1" parameters) in
+   test_circle (fun x -> x) points a_pts b_pts radius1)
 
 
 let condition9 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let c_pts = J.int_of_json (List.assoc "C_PTS" parameters) in
-  let d_pts = J.int_of_json (List.assoc "D_PTS" parameters) in
-  let epsilon = J.float_of_json (List.assoc "EPSILON" parameters) in
-  test_angle points c_pts d_pts epsilon
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 5) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let c_pts = J.int_of_json (List.assoc "C_PTS" parameters) in
+   let d_pts = J.int_of_json (List.assoc "D_PTS" parameters) in
+   let epsilon = J.float_of_json (List.assoc "EPSILON" parameters) in
+   test_angle points c_pts d_pts epsilon)
 
 
 let condition10 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let e_pts = J.int_of_json (List.assoc "E_PTS" parameters) in
-  let f_pts = J.int_of_json (List.assoc "F_PTS" parameters) in
-  let area1 = J.float_of_json (List.assoc "AREA1" parameters) in
-  test_area (>) points e_pts f_pts area1
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 5) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let e_pts = J.int_of_json (List.assoc "E_PTS" parameters) in
+   let f_pts = J.int_of_json (List.assoc "F_PTS" parameters) in
+   let area1 = J.float_of_json (List.assoc "AREA1" parameters) in
+   test_area (>) points e_pts f_pts area1)
 
 
 let condition11 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let g_pts = J.int_of_json (List.assoc "G_PTS" parameters) in
-  test_sub points g_pts
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 3) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let g_pts = J.int_of_json (List.assoc "G_PTS" parameters) in
+   test_sub points g_pts)
 
 
 let condition12 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let k_pts = J.int_of_json (List.assoc "K_PTS" parameters) in
-  let length1 = J.float_of_json (List.assoc "LENGTH1" parameters) in
-  let length2 = J.float_of_json (List.assoc "LENGTH2" parameters) in
-  test_length (>) points k_pts length1 &&
-  test_length (<) points k_pts length2
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 3) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let k_pts = J.int_of_json (List.assoc "K_PTS" parameters) in
+   let length1 = J.float_of_json (List.assoc "LENGTH1" parameters) in
+   let length2 = J.float_of_json (List.assoc "LENGTH2" parameters) in
+   test_length (>) points k_pts length1 &&
+   test_length (<) points k_pts length2)
 
 
 let condition13 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let a_pts = J.int_of_json (List.assoc "A_PTS" parameters) in
-  let b_pts = J.int_of_json (List.assoc "B_PTS" parameters) in
-  let radius1 = J.float_of_json (List.assoc "RADIUS1" parameters) in
-  let radius2 = J.float_of_json (List.assoc "RADIUS2" parameters) in
-  test_circle (fun x -> x)     points a_pts b_pts radius1 &&
-  test_circle (fun x -> not x) points a_pts b_pts radius2
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 5) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let a_pts = J.int_of_json (List.assoc "A_PTS" parameters) in
+   let b_pts = J.int_of_json (List.assoc "B_PTS" parameters) in
+   let radius1 = J.float_of_json (List.assoc "RADIUS1" parameters) in
+   let radius2 = J.float_of_json (List.assoc "RADIUS2" parameters) in
+   test_circle (fun x -> x)     points a_pts b_pts radius1 &&
+   test_circle (fun x -> not x) points a_pts b_pts radius2)
 
 
 let condition14 data =
-  let parameters = J.get_parameters data in
-  let points = J.get_points data in
-  let e_pts = J.int_of_json (List.assoc "E_PTS" parameters) in
-  let f_pts = J.int_of_json (List.assoc "F_PTS" parameters) in
-  let area1 = J.float_of_json (List.assoc "AREA1" parameters) in
-  let area2 = J.float_of_json (List.assoc "AREA2" parameters) in
-  test_area (>) points e_pts f_pts area1 &&
-  test_area (<) points e_pts f_pts area2
+  let numpoints = J.int_of_json (List.assoc "NUMPOINTS" data) in
+  (numpoints >= 5) &&
+  (let parameters = J.get_parameters data in
+   let points = J.get_points data in
+   let e_pts = J.int_of_json (List.assoc "E_PTS" parameters) in
+   let f_pts = J.int_of_json (List.assoc "F_PTS" parameters) in
+   let area1 = J.float_of_json (List.assoc "AREA1" parameters) in
+   let area2 = J.float_of_json (List.assoc "AREA2" parameters) in
+   test_area (>) points e_pts f_pts area1 &&
+   test_area (<) points e_pts f_pts area2)

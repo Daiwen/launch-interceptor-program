@@ -60,20 +60,15 @@ let jsons =
   Array.map (fun n -> (n, YS.from_file n)) filenames
 
 let data =
-  Array.fold_left
-    (fun acc (n, json) ->
+  Array.map
+    (fun (n, json) ->
        match json with
-         `Assoc data' ->
-         if J.check_data_constraints data'
-         then
-           (n, data')::acc
-         else
-           acc
-       | _ -> acc)
-    [] jsons
+         `Assoc data' -> (n, data')
+       | _ -> failwith "Unexpected input format.")
+    jsons
 
 let _ =
-  List.iter
+  Array.iter
     (fun (_, data') ->
        Printf.printf "%s\n%!" (decide data'))
     data
