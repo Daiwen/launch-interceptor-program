@@ -25,10 +25,22 @@ let (--) p1 p2 =
    y = p1.y -. p2.y;
   }
 
+let (++) p1 p2 =
+  {x = p1.x +. p2.x;
+   y = p1.y +. p2.y;
+  }
+
+let scalar s p =
+  {x = s *. p.x;
+   y = s *. p.y;
+  }
+
+let norm v =
+  sqrt (v.x *. v.x +. v.y *. v.y)
+
 let distance p1 p2 =
-  let nx = p1.x -. p2.x in
-  let ny = p1.y -. p2.y in
-  sqrt (nx *. nx +. ny *. ny)
+  let v = p1 -- p2 in
+  norm v
 
 let distance_to_line line p =
   match line with
@@ -69,11 +81,29 @@ let area p1 p2 p3 =
   sqrt (s *. (s -. a) *. (s -. b) *. (s -. c))
 
 let is_in_radius r p1 p2 p3 =
+  (* find 2 points on mediatrice of larger side
+   * look if the distance to the last is lower
+   * than the radius
+   * *)
   let a = distance p1 p2 in
   let b = distance p2 p3 in
   let c = distance p3 p1 in
-  let sumed_square = (a*.a +. b*.b +. c*.c) in 
-  let sumed_4 = (a*.a*.a*.a +. b*.b*.b*.b +. c*.c*.c*.c) in 
-  let area = sqrt (sumed_square*.sumed_square -. 2. *. sumed_4) in
-  let cr = a *. b *. c /. 4. /. area in
-  r < cr
+  let (p1', p2', p3') =
+    if a >= b && a >= c
+    then (p1, p2, p3)
+    else
+    if b >= c && b >= a
+    then (p2, p3, p1)
+    else (p1, p3, p2)
+  in
+  let v = (p2' -- p1') in
+  let n = {
+    x = -. v.y;
+    y =    v.x;
+  }
+  in
+  let middle = p1' ++ (scalar 0.5 v) in
+  let center1 = middle ++ (scalar (r /. (norm n)) n) in
+  let center2 = middle -- (scalar (r /. (norm n)) n) in
+  distance center1 p3' <= r ||
+  distance center2 p3' <= r
